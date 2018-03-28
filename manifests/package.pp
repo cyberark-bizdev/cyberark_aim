@@ -16,7 +16,7 @@
 
 class cyberark_aim::package {
 
-    notify {"CyberArk cyberark_aim::package [${cyberark_aim::package_is_installed}]": withpath => true}
+    # notify {"CyberArk cyberark_aim::package [${cyberark_aim::package_is_installed}]": withpath => true}
 
     if ($cyberark_aim::ensure == 'present') {
 

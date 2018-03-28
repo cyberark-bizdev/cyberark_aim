@@ -38,29 +38,27 @@ class cyberark_aim (
     String $admin_credential_aim_appid = $cyberark_aim::params::admin_credential_aim_appid,
     String $admin_credential_aim_query = $cyberark_aim::params::admin_credential_aim_query,
     Boolean $use_shared_logon_authentication = $cyberark_aim::params::use_shared_logon_authentication,
-    Stdlib::Absolutepath $aim_path_log_file = $cyberark_aim::params::aim_path_log_file,
+    String $aim_path_log_file = $cyberark_aim::params::aim_path_log_file,
     String $provider_user_location = $cyberark_aim::params::provider_user_location,
     String $provider_safe_config = $cyberark_aim::params::provider_safe_config,
     String $provider_username = $cyberark_aim::params::provider_username,
     String $provider_user_groups = $cyberark_aim::params::provider_user_groups,
     Optional[String] $webservices_certificate_file = $cyberark_aim::params::webservices_certificate_file,
-    Stdlib::Httpurl $webservices_sdk_baseurl = $cyberark_aim::params::webservices_sdk_baseurl,
+    String $webservices_sdk_baseurl = $cyberark_aim::params::webservices_sdk_baseurl,
     String $main_app_provider_conf_file = $cyberark_aim::params::main_app_provider_conf_file,
     String $aim_distribution_file = $cyberark_aim::params::aim_distribution_file,
     String $aim_folder_within_distribution = $cyberark_aim::params::aim_folder_within_distribution,
     String $distribution_source_path = $cyberark_aim::params::distribution_source_path,
     String $aim_rpm_to_install = $cyberark_aim::params::aim_rpm_to_install,
-    Stdlib::Absolutepath $aim_temp_install_path = $cyberark_aim::params::aim_temp_install_path,
+    String $aim_temp_install_path = $cyberark_aim::params::aim_temp_install_path,
 ) inherits  cyberark_aim::params {
 
     include '::cyberark_aim::package'
     include '::cyberark_aim::environment'
     include '::cyberark_aim::service'
-    include '::cyberark_aim::test'
 
     Class['cyberark_aim::package']
     -> Class['cyberark_aim::environment']
     ~> Class['cyberark_aim::service']
-    -> Class['cyberark_aim::test']
 
 }
