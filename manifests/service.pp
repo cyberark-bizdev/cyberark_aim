@@ -10,9 +10,11 @@
 # The cyberark_aim::service class makes sure the service is running in case ensure == "present".
 #
 
-class cyberark_aim::service {
+class cyberark_aim::service(
+    String $ensure = 'present',
+) inherits  cyberark_aim::params {
 
-    if ($cyberark_aim::ensure == 'present') {
+    if ($ensure == 'present') {
 
         service { 'aimprv':
             ensure   => running,

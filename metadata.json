@@ -8,20 +8,32 @@
   "project_page": "https://github.com/cyberark/aim-puppet",
   "issues_url": "https://github.com/cyberark/aim-puppet/issues",
   "dependencies": [
-    { "name":"puppetlabs/stdlib","version_requirement":">= 4.13.1 < 5.0.0" }
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.13.1 < 5.0.0"
+    }
   ],
   "operatingsystem_support": [
     {
       "operatingsystem": "ubuntu",
-      "operatingsystemrelease": ["14.04", "16.04"]
+      "operatingsystemrelease": [
+        "14.04",
+        "16.04"
+      ]
     },
     {
       "operatingsystem": "centos",
-      "operatingsystemrelease": ["6", "7"]
+      "operatingsystemrelease": [
+        "6",
+        "7"
+      ]
     },
     {
       "operatingsystem": "debian",
-      "operatingsystemrelease": ["7", "8"]
+      "operatingsystemrelease": [
+        "7",
+        "8"
+      ]
     }
   ],
   "requirements": [
@@ -29,5 +41,8 @@
       "name": "puppet",
       "version_requirement": ">= 4.0.0 < 5.0.0"
     }
-  ]
+  ],
+  "pdk-version": "1.4.1",
+  "template-url": "https://github.com/puppetlabs/pdk-templates",
+  "template-ref": "1.4.1-0-g52adbbb"
 }

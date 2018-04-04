@@ -53,9 +53,38 @@ class cyberark_aim (
     String $aim_temp_install_path = $cyberark_aim::params::aim_temp_install_path,
 ) inherits  cyberark_aim::params {
 
-    include '::cyberark_aim::package'
-    include '::cyberark_aim::environment'
-    include '::cyberark_aim::service'
+    Class { '::cyberark_aim::package':
+      ensure                         => $ensure,
+      aim_distribution_file          => $aim_distribution_file,
+      aim_folder_within_distribution => $aim_folder_within_distribution,
+      distribution_source_path       => $distribution_source_path,
+      aim_temp_install_path          => $aim_temp_install_path,
+      provider_safe_config           => $provider_safe_config,
+      main_app_provider_conf_file    => $main_app_provider_conf_file,
+      aim_rpm_to_install             => $aim_rpm_to_install,
+      vault_address                  => $vault_address,
+      vault_port                     => $vault_port,
+    }
+
+    Class { '::cyberark_aim::environment':
+      ensure                          => $ensure,
+      vault_username                  => $vault_username,
+      vault_password                  => $vault_password,
+      admin_credential_aim_appid      => $admin_credential_aim_appid,
+      admin_credential_aim_query      => $admin_credential_aim_query,
+      use_shared_logon_authentication => $use_shared_logon_authentication,
+      aim_path_log_file               => $aim_path_log_file,
+      provider_user_location          => $provider_user_location,
+      provider_safe_config            => $provider_safe_config,
+      provider_username               => $provider_username,
+      provider_user_groups            => $provider_user_groups,
+      webservices_certificate_file    => $webservices_certificate_file,
+      webservices_sdk_baseurl         => $webservices_sdk_baseurl,
+    }
+
+    Class { '::cyberark_aim::service':
+      ensure => $ensure,
+    }
 
     Class['cyberark_aim::package']
     -> Class['cyberark_aim::environment']

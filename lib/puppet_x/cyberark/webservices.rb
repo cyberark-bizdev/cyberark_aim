@@ -132,9 +132,7 @@ module PuppetX::CyberArk
         http.use_ssl = false
       end
 
-      if Puppet[:debug] == true
-        http.set_debug_output($stdout)
-      end
+      http.set_debug_output($stdout) if Puppet[:debug] == true
 
       req = if action =~ %r{post}i
               Net::HTTP::Post.new(uri.request_uri)

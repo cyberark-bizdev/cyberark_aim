@@ -14,23 +14,34 @@
 # In case of ensure == "absent", it will uninstall the CARKaim package and remove distribution folders.
 #
 
-class cyberark_aim::package {
+class cyberark_aim::package(
+    String $ensure = 'present',
+    String $aim_distribution_file = $cyberark_aim::params::aim_distribution_file,
+    String $aim_folder_within_distribution = $cyberark_aim::params::aim_folder_within_distribution,
+    String $distribution_source_path = $cyberark_aim::params::distribution_source_path,
+    String $aim_temp_install_path = $cyberark_aim::params::aim_temp_install_path,
+    String $provider_safe_config = $cyberark_aim::params::provider_safe_config,
+    String $main_app_provider_conf_file = $cyberark_aim::params::main_app_provider_conf_file,
+    String $aim_rpm_to_install = $cyberark_aim::params::aim_rpm_to_install,
+    String $vault_address = $cyberark_aim::params::vault_address,
+    Integer $vault_port = $cyberark_aim::params::vault_port,
+) inherits  cyberark_aim::params {
 
-    # notify {"CyberArk cyberark_aim::package [${cyberark_aim::package_is_installed}]": withpath => true}
+    # notify {"CyberArk package_is_installed [${package_is_installed}]": withpath => true}
 
-    if ($cyberark_aim::ensure == 'present') {
+    if ($ensure == 'present') {
 
-        if ($cyberark_aim::package_is_installed == false) {
+        if ($cyberark_aim::package::package_is_installed == false) {
 
 
-            if ($cyberark_aim::aim_folder_within_distribution == '') {
-                $folder_within_archive = $cyberark_aim::aim_distribution_file.split('-')[0]
+            if ($aim_folder_within_distribution == '') {
+                $folder_within_archive = $aim_distribution_file.split('-')[0]
             } else {
-                $folder_within_archive = $cyberark_aim::aim_folder_within_distribution
+                $folder_within_archive = $aim_folder_within_distribution
             }
 
-            $tmp_directory = $cyberark_aim::aim_temp_install_path
-            $aim_file_archive = $cyberark_aim::aim_distribution_file
+            $tmp_directory = $aim_temp_install_path
+            $aim_file_archive = $aim_distribution_file
 
             $full_path = "${tmp_directory}/${aim_file_archive}"
 
@@ -54,7 +65,7 @@ class cyberark_aim::package {
                 mode    => '0700',
                 owner   => root,
                 group   => root,
-                source  => "${cyberark_aim::distribution_source_path}/${aim_file_archive}",
+                source  => "${distribution_source_path}/${aim_file_archive}",
                 require => File['create_directory'],
             }
 
@@ -125,7 +136,7 @@ class cyberark_aim::package {
                 ensure  => present,
                 section => 'Main',
                 setting => 'MainAppProviderConfFile',
-                value   => $cyberark_aim::main_app_provider_conf_file,
+                value   => $main_app_provider_conf_file,
                 path    => '/var/tmp/aimparms',
                 require => File['copy_aimparms'],
             }
@@ -133,7 +144,7 @@ class cyberark_aim::package {
             # Install Package
             package { 'CARKaim':
                 ensure   => installed,
-                source   => "${tmp_directory}/${folder_within_archive}/${cyberark_aim::aim_rpm_to_install}",
+                source   => "${tmp_directory}/${folder_within_archive}/${aim_rpm_to_install}",
                 provider => 'rpm',
                 require  => Ini_setting['VaultFilePath'],
             }
@@ -152,7 +163,7 @@ class cyberark_aim::package {
                 ensure  => present,
                 section => '',
                 setting => 'ADDRESS',
-                value   => $cyberark_aim::vault_address,
+                value   => $vault_address,
                 path    => '/etc/opt/CARKaim/vault/vault.ini',
                 require => File['CopyVaultConfigFileParams'],
             }
@@ -162,18 +173,18 @@ class cyberark_aim::package {
                 ensure  => present,
                 section => '',
                 setting => 'PORT',
-                value   => $cyberark_aim::vault_port,
+                value   => $vault_port,
                 path    => '/etc/opt/CARKaim/vault/vault.ini',
                 require => File['CopyVaultConfigFileParams'],
             }
 
-            if ($cyberark_aim::main_app_provider_conf_file != '') {
+            if ($main_app_provider_conf_file != '') {
                 # Changes to /etc/opt/CARKaim/conf/basic_appprovider.conf
                 ini_setting { 'modifyBasicAppPrvConfig':
                     ensure  => present,
                     section => 'Main',
                     setting => 'AppProviderVaultParmsFile',
-                    value   => $cyberark_aim::main_app_provider_conf_file,
+                    value   => $main_app_provider_conf_file,
                     path    => '/etc/opt/CARKaim/conf/basic_appprovider.conf',
                     require => File['CopyVaultConfigFileParams'],
                 }
@@ -191,9 +202,9 @@ class cyberark_aim::package {
             notify {'CyberArk AIM Package is already installed': withpath => true}
         }
 
-    } elsif ($cyberark_aim::ensure == 'absent') {
+    } elsif ($ensure == 'absent') {
 
-        if ($cyberark_aim::package_is_installed) {
+        if ($cyberark_aim::package::package_is_installed) {
             # Uninstall Package
             package { 'CARKaim':
                 ensure   => 'absent',
@@ -211,6 +222,9 @@ class cyberark_aim::package {
                 cwd     =>'/tmp/',
                 require => Package['CARKaim'],
             }
+        } else {
+            # packaged is not installed
+            notify {'CyberArk AIM Package is not installed': withpath => true}
         }
 
     }

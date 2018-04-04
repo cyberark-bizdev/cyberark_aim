@@ -68,7 +68,7 @@ Puppet::Functions.create_function(:cyberark_credential) do
           stderr.each_line do |line|
             error_msg = "#{error_msg}\n#{line}"
           end
-          abort error_msg
+          raise error_msg
         end
         line = stdout.gets
         result = line.delete("\n").split(',')

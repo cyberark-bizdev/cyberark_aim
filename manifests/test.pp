@@ -6,16 +6,13 @@
 # (un)install the Credential Provider on the node.
 # ------------------------------------------------------------------------------------------
 
-# cyberark_aim::environment
+# cyberark_aim::test
 #
-# The cyberark_aim::environment class makes sure the environment for the provider user is setup (if ensure == "present")
-# by creating the user in CyberArk Vault with a random password and creating a credential file for it.
-# It also makes sure the provider user is removed when ensure == "absent".
 #
 
-class cyberark_aim::test {
+class cyberark_aim::test inherits cyberark_aim::params {
 
-    if ($cyberark_aim::package_is_installed == true) {
+    if ($cyberark_aim::test::package_is_installed == true) {
       $get_admin_info = { 'appId' => 'PuppetTest',
                           'query' => 'Safe=CyberArk Passwords;Folder=Root;Object=AdminPass',
                         }

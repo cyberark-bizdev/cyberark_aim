@@ -17,25 +17,39 @@ require 'securerandom'
 # It also makes sure the provider user is removed when ensure == "absent".
 #
 
-class cyberark_aim::environment {
+class cyberark_aim::environment(
+    String $ensure = 'present',
+    String $vault_username = '',
+    String $vault_password = '',
+    String $admin_credential_aim_appid = $cyberark_aim::params::admin_credential_aim_appid,
+    String $admin_credential_aim_query = $cyberark_aim::params::admin_credential_aim_query,
+    Boolean $use_shared_logon_authentication = $cyberark_aim::params::use_shared_logon_authentication,
+    String $aim_path_log_file = $cyberark_aim::params::aim_path_log_file,
+    String $provider_user_location = $cyberark_aim::params::provider_user_location,
+    String $provider_safe_config = $cyberark_aim::params::provider_safe_config,
+    String $provider_username = $cyberark_aim::params::provider_username,
+    String $provider_user_groups = $cyberark_aim::params::provider_user_groups,
+    Optional[String] $webservices_certificate_file = $cyberark_aim::params::webservices_certificate_file,
+    String $webservices_sdk_baseurl = $cyberark_aim::params::webservices_sdk_baseurl,
+) inherits cyberark_aim::params {
 
-    $get_admin_info = { 'appId' => $cyberark_aim::admin_credential_aim_appid,
-                        'query' => $cyberark_aim::admin_credential_aim_query,
+    $get_admin_info = { 'appId' => $admin_credential_aim_appid,
+                        'query' => $admin_credential_aim_query,
                       }
 
-    if ($cyberark_aim::ensure == 'present') {
+    if ($ensure == 'present') {
 
-        if ($cyberark_aim::package_is_installed == false) {
+        if ($cyberark_aim::environment::package_is_installed == false) {
 
-            if ($cyberark_aim::use_shared_logon_authentication == false and
-                $cyberark_aim::admin_credential_aim_query != '') {
+            if ($use_shared_logon_authentication == false and
+                $admin_credential_aim_query != '') {
                 # Retrieve administrative credential
-                $user_and_pwd = cyberark_credential($get_admin_info, $cyberark_aim::aim_path_log_file)
+                $user_and_pwd = cyberark_credential($get_admin_info, $aim_path_log_file)
                 $session_id = cyberark_new_session_id()
-            } elsif $cyberark_aim::vault_username != '' and $cyberark_aim::vault_password != '' {
-                $user_and_pwd = [$cyberark_aim::vault_username, $cyberark_aim::vault_password]
+            } elsif $vault_username != '' and $vault_password != '' {
+                $user_and_pwd = [$vault_username, $vault_password]
                 $session_id = 1
-            } elsif ($cyberark_aim::use_shared_logon_authentication == false) {
+            } elsif ($use_shared_logon_authentication == false) {
                 notify {'Provide either admin_credential_aim_query or vault_username/vault_password or use_shared_logon_authentication': }
                 fail('Provide either admin_credential_aim_query or vault_username/vault_password or use_shared_logon_authentication')
             } else {
@@ -46,42 +60,43 @@ class cyberark_aim::environment {
             $prov_user_pwd = cyberark_random_password()
 
             # Ensure Provider User is created.
-            cyberark_user { $cyberark_aim::provider_username:
-                base_url                        => $cyberark_aim::webservices_sdk_baseurl,
-                #webservices_certificate_file => $cyberark_aim::certificate_file,
-                use_shared_logon_authentication => $cyberark_aim::use_shared_logon_authentication,
+            cyberark_user { $provider_username:
+                ensure                          => 'present',
+                base_url                        => $webservices_sdk_baseurl,
+                #webservices_certificate_file => $certificate_file,
+                use_shared_logon_authentication => $use_shared_logon_authentication,
                 connection_number               => $session_id,
                 login_username                  => $user_and_pwd[0],
                 login_password                  => $user_and_pwd[1],
                 initial_password                => $prov_user_pwd,
-                groups_to_be_added_to           => $cyberark_aim::provider_user_groups,
+                groups_to_be_added_to           => $provider_user_groups,
                 user_type_name                  => 'AppProvider',
-                location                        => $cyberark_aim::provider_user_location,
+                location                        => $provider_user_location,
             }
 
             # Create credential file for the new provider
             exec { 'createcred_exec' :
                 command => "/opt/CARKaim/bin/createcredfile /etc/opt/CARKaim/vault/appprovideruser.cred Password \
-                            -Username ${cyberark_aim::provider_username} -Password ${prov_user_pwd} \
+                            -Username ${provider_username} -Password ${prov_user_pwd} \
                             -apptype AppPrv -hostname -displayrestrictions",
                 cwd     => '/opt/CARKaim/bin/',
             }
 
         }
 
-    } elsif ($cyberark_aim::ensure == 'absent') {
+    } elsif ($ensure == 'absent') {
 
-        if ($cyberark_aim::package_is_installed) {
+        if ($cyberark_aim::environment::package_is_installed) {
 
-            if ($cyberark_aim::use_shared_logon_authentication == false and
-                $cyberark_aim::admin_credential_aim_query != '') {
+            if ($use_shared_logon_authentication == false and
+                $admin_credential_aim_query != '') {
                 # Retrieve administrative credential
-                $user_and_pwd = cyberark_credential($get_admin_info, $cyberark_aim::aim_path_log_file)
+                $user_and_pwd = cyberark_credential($get_admin_info, $aim_path_log_file)
                 $session_id = cyberark_new_session_id()
-            } elsif $cyberark_aim::vault_username != '' and $cyberark_aim::vault_password != '' {
-                $user_and_pwd = [$cyberark_aim::vault_username, $cyberark_aim::vault_password]
+            } elsif $vault_username != '' and $vault_password != '' {
+                $user_and_pwd = [$vault_username, $vault_password]
                 $session_id = 1
-            } elsif ($cyberark_aim::use_shared_logon_authentication == false) {
+            } elsif ($use_shared_logon_authentication == false) {
                 notify { 'Provide either admin_credential_aim_query or vault_username/vault_password or use_shared_logon_authentication': }
                 fail('Provide either admin_credential_aim_query or vault_username/vault_password or use_shared_logon_authentication')
             } else {
@@ -90,11 +105,11 @@ class cyberark_aim::environment {
             }
 
             # Ensure Provider user is removed.
-            cyberark_user { $cyberark_aim::provider_username:
+            cyberark_user { $provider_username:
                 ensure                          => 'absent',
-                base_url                        => $cyberark_aim::webservices_sdk_baseurl,
-                #webservices_certificate_file => $cyberark_aim::webservices_certificate_file,
-                use_shared_logon_authentication => $cyberark_aim::use_shared_logon_authentication,
+                base_url                        => $webservices_sdk_baseurl,
+                #webservices_certificate_file => $webservices_certificate_file,
+                use_shared_logon_authentication => $use_shared_logon_authentication,
                 connection_number               => $session_id,
                 login_username                  => $user_and_pwd[0],
                 login_password                  => $user_and_pwd[1],
